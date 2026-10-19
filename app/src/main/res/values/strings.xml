@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">FloatScript</string>
+
+    <!-- Overlay service -->
+    <string name="overlay_channel_name">Teleprompter overlay</string>
+    <string name="overlay_channel_desc">Keeps the floating teleprompter running above other apps.</string>
+    <string name="overlay_notification_title">FloatScript is running</string>
+    <string name="overlay_notification_text">Tap to return to FloatScript</string>
+    <string name="overlay_action_stop">Stop</string>
+
+    <!-- Home -->
+    <string name="home_title">FloatScript</string>
+    <string name="home_start_overlay">Start teleprompter</string>
+    <string name="home_stop_overlay">Stop teleprompter</string>
+    <string name="home_new_script">New script</string>
+    <string name="home_import_txt">Import .txt</string>
+    <string name="home_paste_clipboard">Paste from clipboard</string>
+    <string name="home_settings">Settings</string>
+    <string name="home_empty">No scripts yet. Create one to get started.</string>
+
+    <!-- Editor -->
+    <string name="editor_title">Edit script</string>
+    <string name="editor_name_hint">Script title</string>
+    <string name="editor_body_hint">Type or paste your script here…</string>
+    <string name="action_save">Save</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_rename">Rename</string>
+    <string name="action_duplicate">Duplicate</string>
+    <string name="action_delete">Delete</string>
+    <string name="action_edit">Edit</string>
+    <string name="action_use">Use</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Teleprompter settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_scrolling">Scrolling</string>
+    <string name="settings_advanced">Advanced</string>
+    <string name="settings_text_color">Text colour</string>
+    <string name="settings_text_size">Font size</string>
+    <string name="settings_font_weight">Font weight</string>
+    <string name="settings_bold">Bold text</string>
+    <string name="settings_scroll_mode">Scroll mode</string>
+    <string name="settings_line_spacing">Line spacing</string>
+    <string name="settings_alignment">Alignment</string>
+    <string name="settings_bg_opacity">Background opacity</string>
+    <string name="settings_bg_tint">Background tint</string>
+    <string name="settings_margin">Text margin</string>
+    <string name="settings_speed">Scroll speed</string>
+    <string name="settings_countdown">Countdown before scrolling</string>
+    <string name="settings_hide_controls">Auto-hide controls while scrolling</string>
+    <string name="settings_mirror_h">Mirror text horizontally</string>
+    <string name="settings_flip_v">Flip text vertically</string>
+    <string name="settings_keep_awake">Keep screen awake</string>
+    <string name="settings_speech_follow">Speech-following mode</string>
+    <string name="settings_minimal_mode">Minimal mode (script only)</string>
+    <string name="settings_word_by_word">Word-by-word highlight</string>
+
+    <!-- Recording -->
+    <string name="record_title">Record with teleprompter</string>
+    <string name="record_start">Start recording</string>
+    <string name="record_stop">Stop recording</string>
+    <string name="record_open_camera">Open camera app</string>
+    <string name="record_switch_camera">Switch camera</string>
+    <string name="record_saved">Video saved to your gallery</string>
+
+    <!-- Misc -->
+    <string name="permission_overlay_rationale">FloatScript needs permission to draw over other apps so the teleprompter can float above your camera.</string>
+    <string name="permission_grant">Grant</string>
+    <string name="permission_open_settings">Open settings</string>
+    <string name="cd_drag_handle">Drag handle</string>
+    <string name="cd_close">Close teleprompter</string>
+    <string name="cd_play">Play</string>
+    <string name="cd_pause">Pause</string>
+    <string name="cd_restart">Restart</string>
+    <string name="cd_speed_up">Increase speed</string>
+    <string name="cd_speed_down">Decrease speed</string>
+    <string name="cd_text_up">Increase text size</string>
+    <string name="cd_text_down">Decrease text size</string>
+    <string name="cd_toggle_controls">Hide or show controls</string>
+</resources>

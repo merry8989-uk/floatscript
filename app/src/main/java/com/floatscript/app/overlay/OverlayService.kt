@@ -104,7 +104,7 @@ class OverlayService : LifecycleService() {
         }
         // Reflect play/pause in the notification action label.
         lifecycleScope.launch {
-            state.isPlaying.distinctUntilChanged().collect { playing ->
+            state.isPlaying.collect { playing ->   // StateFlow already de-duplicates
                 NotificationManagerCompat.from(this@OverlayService)
                     .notify(OverlayConstants.NOTIFICATION_ID, buildNotification(playing))
             }

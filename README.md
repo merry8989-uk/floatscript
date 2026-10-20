@@ -110,11 +110,17 @@ app/src/main/java/com/floatscript/app/
 - Saved locally with **Room**; settings and window geometry with **DataStore**.
 - Import `.txt` files and paste from the clipboard.
 - Remembers the last script, font size, scroll speed and window position.
-- Ships with a sample script; long scripts are handled off the main thread.
+- **Local backup and restore**: export every script to a JSON file and import it
+  again later, using the system file picker (no cloud account needed).
+- Ships with a sample script; the word highlight is drawn onto the text layout
+  instead of rebuilding the text, so long scripts stay smooth.
 
 ### D. Floating controls
-Play/pause, speed ±, text size ±, restart, hide/show controls, close — all
-touch-friendly, with an optional **minimal mode** that shows only the script.
+Play/pause, stop, speed ±, text size ±, reading-mode switch, restart,
+hide/show controls and close — all touch-friendly, with a live read-out of the
+current speed / text size / mode. **Minimal mode** shows only the script; the
+control strip comes back with a tap and the window stays draggable, so minimal
+mode never leaves you unable to start playback.
 
 ### E. Camera & recording workflow
 - **External camera workflow:** a shortcut opens the device's camera app while
@@ -129,7 +135,11 @@ touch-friendly, with an optional **minimal mode** that shows only the script.
 - Adjustable margins and line spacing.
 - Countdown timer; keep-screen-awake while the overlay is active.
 - Optional speech-following mode (`SpeechRecognizer`) that advances the script
-  as you speak, with microphone permission and error handling.
+  as you speak. The microphone permission is requested when you switch the
+  feature on, and repeated recogniser errors stop the follower instead of
+  looping.
+- Settings changed in the app reach a running overlay immediately, and changes
+  made with the floating controls are saved back.
 - Battery-efficient: the overlay is a single foreground service that stops
   completely when closed.
 
@@ -161,6 +171,8 @@ external-teleprompter even if camera/mic permissions are denied.
 - **Speech-following** depends on the device's on-device speech recogniser and
   network availability for some languages.
 - The sample script and UI strings are in English.
+- The floating window re-clamps itself on rotation, but the saved position is in
+  raw pixels, so a rotation can still move the window.
 - Icons use only the small `material-icons-core` set plus a few hand-drawn
   vectors in `ui/icons/AppIcons.kt`, deliberately avoiding the ~35 MB
   `material-icons-extended` dependency (which slows dexing a lot for a handful

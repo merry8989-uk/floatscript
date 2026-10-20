@@ -1,5 +1,7 @@
 package com.floatscript.app.overlay
 
+import android.Manifest
+import android.content.pm.PackageManager
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
@@ -26,24 +28,29 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.TextLayoutResult
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.floatscript.app.R
 import com.floatscript.app.model.ScriptSettings
 import com.floatscript.app.model.TextAlign as AlignModel
 import com.floatscript.app.speech.SpeechFollower
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+
+private val HIGHLIGHT = Color(0x66FFD54F)
 
 /**
  * Everything that lives inside the floating window: the tinted background, the
@@ -55,7 +62,6 @@ fun TeleprompterView(
     state: TeleprompterState,
     onDrag: (Float, Float) -> Unit,
     onResize: (Float, Float) -> Unit,
-    onSettingsPersist: (ScriptSettings) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val settings by state.settings.collectAsStateWithLifecycle()
@@ -69,13 +75,12 @@ fun TeleprompterView(
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     var wordRange by remember { mutableStateOf<IntRange?>(null) }
 
-    // Persist any settings change coming from the floating controls.
-    LaunchedEffect(settings) { onSettingsPersist(settings) }
-
-    // Jump back to the top whenever a restart is requested.
+    // Jump back to the top whenever a restart / stop is requested.
     LaunchedEffect(restartKey) { scrollState.scrollTo(0) }
 
-    // Pre-scroll countdown.
+    // Pre-scroll countdown. Re-running the effect every second is harmless
+    // because a paused / stopped state sets the countdown to 0, which makes the
+    // effect a no-op — that is what lets pause() cancel the countdown.
     LaunchedEffect(countdown) {
         if (countdown > 0) {
             for (i in countdown downTo 1) {
@@ -103,6 +108,12 @@ fun TeleprompterView(
     LaunchedEffect(settings.speechFollowEnabled, isPlaying, layout, body) {
         val lr = layout
         if (!settings.speechFollowEnabled || !isPlaying || lr == null) return@LaunchedEffect
+        // Speech-following needs the microphone; without it the recogniser would
+        // fail and (previously) spin in a restart loop, so bail out early.
+        val micGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+            PackageManager.PERMISSION_GRANTED
+        if (!micGranted) return@LaunchedEffect
+
         val scriptWords = TextTokenizer.words(body)
         var pointer = 0
         val follower = SpeechFollower(
@@ -151,49 +162,35 @@ fun TeleprompterView(
     ) {
         Column(Modifier.fillMaxSize()) {
 
-            // Always-present, subtle drag strip so the window can be moved even
-            // when the control strip is hidden.
-            if (!settings.minimalMode) {
+            // Subtle drag strip, always present so the window can be moved even
+            // when the control strip is hidden (including in minimal mode).
+            val dragLabel = stringResource(R.string.cd_drag_strip)
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(22.dp)
+                    .background(Color(0x33FFFFFF))
+                    .semantics { contentDescription = dragLabel }
+                    .pointerInput(Unit) {
+                        detectDragGestures { change, dragAmount ->
+                            change.consume()
+                            onDrag(dragAmount.x, dragAmount.y)
+                        }
+                    },
+                contentAlignment = Alignment.Center
+            ) {
                 Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(22.dp)
-                        .background(Color(0x33FFFFFF))
-                        .pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                onDrag(dragAmount.x, dragAmount.y)
-                            }
-                        },
-                    contentAlignment = Alignment.Center
-                ) {
-                    Box(
-                        Modifier
-                            .size(width = 40.dp, height = 4.dp)
-                            .clip(RoundedCornerShape(2.dp))
-                            .background(Color(0x99FFFFFF))
-                    )
-                }
+                    Modifier
+                        .size(width = 40.dp, height = 4.dp)
+                        .clip(RoundedCornerShape(2.dp))
+                        .background(Color(0x99FFFFFF))
+                )
             }
 
             // The scrolling script.
             Box(Modifier.weight(1f).fillMaxWidth()) {
-                val annotated = remember(body, wordRange) {
-                    buildAnnotatedString {
-                        val range = wordRange
-                        if (range == null || range.first >= body.length || range.last >= body.length) {
-                            append(body)
-                        } else {
-                            append(body.substring(0, range.first))
-                            withStyle(SpanStyle(background = Color(0x66FFD54F))) {
-                                append(body.substring(range.first, range.last + 1))
-                            }
-                            append(body.substring(range.last + 1))
-                        }
-                    }
-                }
                 Text(
-                    text = annotated,
+                    text = body,
                     color = settings.textColor,
                     fontSize = settings.fontSizeSp.sp,
                     fontWeight = if (settings.bold) FontWeight.Bold else FontWeight.Normal,
@@ -208,25 +205,34 @@ fun TeleprompterView(
                             scaleY = if (settings.flipVertically) -1f else 1f
                         )
                         .padding(horizontal = settings.horizontalMarginDp.dp, vertical = 8.dp)
+                        // Word highlight is drawn straight onto the layout instead
+                        // of rebuilding the whole AnnotatedString for every word,
+                        // which keeps long scripts smooth.
+                        .drawBehind {
+                            val range = wordRange ?: return@drawBehind
+                            val rect = runCatching { layout?.getBoundingBox(range.first) }.getOrNull()
+                                ?: return@drawBehind
+                            drawRect(color = HIGHLIGHT, topLeft = rect.topLeft, size = rect.size)
+                        }
                 )
 
-                // Resize grip in the bottom-end corner.
-                if (!settings.minimalMode) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .size(28.dp)
-                            .padding(4.dp)
-                            .clip(RoundedCornerShape(6.dp))
-                            .background(Color(0x55FFFFFF))
-                            .pointerInput(Unit) {
-                                detectDragGestures { change, dragAmount ->
-                                    change.consume()
-                                    onResize(dragAmount.x, dragAmount.y)
-                                }
+                // Resize grip in the bottom-end corner (always available).
+                val resizeLabel = stringResource(R.string.cd_resize)
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .size(28.dp)
+                        .padding(4.dp)
+                        .clip(RoundedCornerShape(6.dp))
+                        .background(Color(0x55FFFFFF))
+                        .semantics { contentDescription = resizeLabel }
+                        .pointerInput(Unit) {
+                            detectDragGestures { change, dragAmount ->
+                                change.consume()
+                                onResize(dragAmount.x, dragAmount.y)
                             }
-                    )
-                }
+                        }
+                )
             }
 
             // Countdown banner.
@@ -244,19 +250,25 @@ fun TeleprompterView(
                 }
             }
 
-            // Control strip.
-            if (controlsVisible && !settings.minimalMode) {
+            // Control strip. In minimal mode it simply starts hidden and comes
+            // back on tap, so playback is always reachable.
+            if (controlsVisible) {
                 Row(
                     Modifier.fillMaxWidth().padding(6.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
                     FloatingControls(
                         isPlaying = isPlaying,
+                        speed = settings.scrollSpeedPxPerSec,
+                        fontSizeSp = settings.fontSizeSp,
+                        scrollMode = settings.scrollMode,
                         onTogglePlay = { state.togglePlay() },
+                        onStop = { state.stop() },
                         onSpeedDown = { state.decreaseSpeed() },
                         onSpeedUp = { state.increaseSpeed() },
                         onTextDown = { state.decreaseTextSize() },
                         onTextUp = { state.increaseTextSize() },
+                        onCycleMode = { state.cycleScrollMode() },
                         onRestart = { state.restart() },
                         onHide = { state.hideControls() },
                         onClose = { state.requestClose() },

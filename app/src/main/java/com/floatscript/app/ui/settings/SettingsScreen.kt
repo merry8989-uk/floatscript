@@ -1,5 +1,10 @@
 package com.floatscript.app.ui.settings
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -33,8 +38,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.floatscript.app.R
@@ -60,6 +67,18 @@ fun SettingsScreen(
     viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val s by viewModel.settings.collectAsStateWithLifecycle()
+    val context = LocalContext.current
+
+    // Speech-following needs the microphone, so ask for it the moment the user
+    // switches the feature on instead of letting the recogniser fail silently.
+    val micPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        viewModel.setSpeechFollow(granted)
+        if (!granted) {
+            Toast.makeText(context, context.getString(R.string.speech_permission_needed), Toast.LENGTH_LONG).show()
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -169,7 +188,18 @@ fun SettingsScreen(
             ToggleRow(stringResource(R.string.settings_mirror_h), s.mirrorHorizontally, viewModel::setMirror)
             ToggleRow(stringResource(R.string.settings_flip_v), s.flipVertically, viewModel::setFlip)
             ToggleRow(stringResource(R.string.settings_keep_awake), s.keepScreenAwake, viewModel::setKeepAwake)
-            ToggleRow(stringResource(R.string.settings_speech_follow), s.speechFollowEnabled, viewModel::setSpeechFollow)
+            ToggleRow(
+                label = stringResource(R.string.settings_speech_follow),
+                checked = s.speechFollowEnabled,
+                onChange = { enabled ->
+                    when {
+                        !enabled -> viewModel.setSpeechFollow(false)
+                        ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
+                            PackageManager.PERMISSION_GRANTED -> viewModel.setSpeechFollow(true)
+                        else -> micPermissionLauncher.launch(Manifest.permission.RECORD_AUDIO)
+                    }
+                }
+            )
             ToggleRow(stringResource(R.string.settings_minimal_mode), s.minimalMode, viewModel::setMinimal)
 
             Spacer(Modifier.height(24.dp))

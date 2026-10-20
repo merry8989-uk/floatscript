@@ -19,6 +19,9 @@ interface ScriptDao {
     @Query("SELECT COUNT(*) FROM scripts")
     suspend fun count(): Int
 
+    @Query("SELECT * FROM scripts ORDER BY updatedAt DESC")
+    suspend fun getAll(): List<ScriptEntity>
+
     @Insert
     suspend fun insert(entity: ScriptEntity): Long
 

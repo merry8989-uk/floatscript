@@ -64,6 +64,29 @@
     <string name="record_switch_camera">Switch camera</string>
     <string name="record_saved">Video saved to your gallery</string>
 
+    <string name="cd_stop">Stop</string>
+    <string name="cd_scroll_mode">Scroll mode</string>
+    <string name="cd_drag_strip">Drag to move the teleprompter</string>
+    <string name="cd_resize">Drag to resize the teleprompter</string>
+
+    <!-- Backup / restore -->
+    <string name="backup_scripts">Backup scripts</string>
+    <string name="restore_scripts">Restore scripts</string>
+    <string name="backup_saved">Backup saved</string>
+    <string name="backup_failed">Could not save the backup</string>
+    <string name="restore_done">%1$d script(s) restored</string>
+    <string name="restore_failed">Could not read that backup file</string>
+    <string name="home_more">More</string>
+
+    <!-- Speech-follow permission -->
+    <string name="speech_permission_needed">Microphone permission is required for speech-following</string>
+
+    <!-- Recording permission explanation -->
+    <string name="record_permissions_title">About in-app recording</string>
+    <string name="record_permissions_body">Built-in recording uses CameraX and needs the Camera permission (to see you) and Microphone permission (to record audio); if you deny the microphone, video is still recorded silently. On Android 13+ the Notification permission only controls the "recording in progress" notification. If you deny Camera, use \u201COpen camera app\u201D instead \u2014 that is the external workflow, where the teleprompter floats over your own camera app and no in-app permissions are needed.</string>
+    <string name="record_error">Recording problem: %1$s</string>
+    <string name="record_finalized">Video saved to your gallery</string>
+
     <!-- Misc -->
     <string name="permission_overlay_rationale">FloatScript needs permission to draw over other apps so the teleprompter can float above your camera.</string>
     <string name="permission_grant">Grant</string>

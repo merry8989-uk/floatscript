@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Build
 import android.provider.MediaStore
 import android.provider.Settings
 import android.widget.Toast
@@ -20,6 +21,7 @@ import androidx.camera.video.QualitySelector
 import androidx.camera.video.Recorder
 import androidx.camera.video.Recording
 import androidx.camera.video.VideoCapture
+import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -32,6 +34,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -76,6 +79,10 @@ fun RecordScreen(onBack: () -> Unit) {
         hasCamera = result[Manifest.permission.CAMERA] ?: hasCamera
         hasAudio = result[Manifest.permission.RECORD_AUDIO] ?: hasAudio
     }
+
+    val notificationLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { /* overlay still works without the notification */ }
 
     LaunchedEffect(Unit) {
         val needed = mutableListOf<String>()
@@ -154,11 +161,21 @@ fun RecordScreen(onBack: () -> Unit) {
                 }
             }
 
-            Text(
-                "Tip: tap \u201CShow teleprompter\u201D first, then record \u2014 the script floats above this preview.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
+            // Permissions used by the built-in recorder, and how this differs
+            // from the external camera-app workflow.
+            Card(Modifier.fillMaxWidth()) {
+                Column(Modifier.padding(12.dp)) {
+                    Text(
+                        stringResource(R.string.record_permissions_title),
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Text(
+                        stringResource(R.string.record_permissions_body),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
 
             Row(
                 Modifier.fillMaxWidth(),
@@ -167,10 +184,7 @@ fun RecordScreen(onBack: () -> Unit) {
                 Button(
                     onClick = {
                         if (isRecording) {
-                            recording?.stop()
-                            recording = null
-                            isRecording = false
-                            Toast.makeText(context, context.getString(R.string.record_saved), Toast.LENGTH_SHORT).show()
+                            recording?.stop() // Finalize callback flips isRecording back
                         } else {
                             val name = "FloatScript_" +
                                 SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(System.currentTimeMillis())
@@ -186,10 +200,39 @@ fun RecordScreen(onBack: () -> Unit) {
                             var pending = videoCapture.output.prepareRecording(context, output)
                             if (hasAudio) pending = pending.withAudioEnabled()
 
-                            recording = pending.start(ContextCompat.getMainExecutor(context)) { event ->
-                                // Recording lifecycle callbacks; finalise state on stop.
+                            runCatching {
+                                pending.start(ContextCompat.getMainExecutor(context)) { event ->
+                                    when (event) {
+                                        is VideoRecordEvent.Start -> isRecording = true
+                                        is VideoRecordEvent.Finalize -> {
+                                            isRecording = false
+                                            recording = null
+                                            if (event.hasError()) {
+                                                val reason = event.cause?.message ?: event.error.toString()
+                                                Toast.makeText(
+                                                    context,
+                                                    context.getString(R.string.record_error, reason),
+                                                    Toast.LENGTH_LONG
+                                                ).show()
+                                            } else {
+                                                Toast.makeText(
+                                                    context,
+                                                    context.getString(R.string.record_finalized),
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+                                        }
+                                        else -> Unit
+                                    }
+                                }
+                            }.onFailure {
+                                isRecording = false
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.record_error, it.message ?: "unknown"),
+                                    Toast.LENGTH_LONG
+                                ).show()
                             }
-                            isRecording = true
                         }
                     },
                     modifier = Modifier.weight(1f)
@@ -232,6 +275,9 @@ fun RecordScreen(onBack: () -> Unit) {
                                 )
                             )
                         } else {
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            }
                             OverlayService.start(context)
                         }
                     },

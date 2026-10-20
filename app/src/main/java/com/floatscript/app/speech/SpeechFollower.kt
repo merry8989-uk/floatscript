@@ -14,6 +14,11 @@ import java.util.Locale
  * listening so the teleprompter can track a continuous read.
  *
  * Callers must hold the RECORD_AUDIO permission before [start].
+ *
+ * Errors are bounded: a fatal error (missing permission / recogniser not
+ * available) stops the follower, and repeated transient errors stop it after
+ * [MAX_CONSECUTIVE_ERRORS] so a misconfigured device cannot spin in a
+ * restart loop and drain the battery.
  */
 class SpeechFollower(
     private val context: Context,
@@ -23,7 +28,7 @@ class SpeechFollower(
 
     private var recognizer: SpeechRecognizer? = null
     private var listening = false
-    private var restartOnResult = true
+    private var consecutiveErrors = 0
 
     private val listener = object : RecognitionListener {
         override fun onReadyForSpeech(params: Bundle?) {}
@@ -34,10 +39,20 @@ class SpeechFollower(
 
         override fun onError(error: Int) {
             onError(error)
+            if (isFatal(error)) {
+                stop()
+                return
+            }
+            consecutiveErrors++
+            if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                stop()
+                return
+            }
             if (listening) restart()
         }
 
         override fun onResults(results: Bundle?) {
+            consecutiveErrors = 0
             val text = results
                 ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 ?.firstOrNull()
@@ -45,10 +60,11 @@ class SpeechFollower(
             if (text.isNotBlank()) {
                 onWords(text.split(' ', '\n').filter { it.isNotBlank() })
             }
-            if (listening && restartOnResult) restart()
+            if (listening) restart()
         }
 
         override fun onPartialResults(partialResults: Bundle?) {
+            consecutiveErrors = 0
             val text = partialResults
                 ?.getStringArrayList(SpeechRecognizer.RESULTS_RECOGNITION)
                 ?.firstOrNull()
@@ -76,6 +92,7 @@ class SpeechFollower(
             onError(SpeechRecognizer.ERROR_CLIENT)
             return
         }
+        consecutiveErrors = 0
         recognizer = SpeechRecognizer.createSpeechRecognizer(context).apply {
             setRecognitionListener(listener)
         }
@@ -98,5 +115,11 @@ class SpeechFollower(
             recognizer?.cancel()
             recognizer?.startListening(intent)
         }
+    }
+
+    private fun isFatal(error: Int) = error == SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS
+
+    private companion object {
+        const val MAX_CONSECUTIVE_ERRORS = 5
     }
 }

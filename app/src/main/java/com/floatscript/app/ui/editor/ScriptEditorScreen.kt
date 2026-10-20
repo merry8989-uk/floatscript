@@ -28,6 +28,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.floatscript.app.R
+import com.floatscript.app.overlay.OverlayService
 import com.floatscript.app.viewmodel.AppViewModelProvider
 import com.floatscript.app.viewmodel.ScriptEditorViewModel
 
@@ -55,7 +56,11 @@ fun ScriptEditorScreen(
                 },
                 actions = {
                     IconButton(onClick = {
-                        viewModel.save { onBack() }
+                        viewModel.save { id ->
+                            // If this script is the one on screen, refresh the overlay.
+                            OverlayService.updateIfCurrent(context, id)
+                            onBack()
+                        }
                     }) {
                         Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.action_save))
                     }

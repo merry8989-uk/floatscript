@@ -29,7 +29,7 @@ data class ScriptSettings(
     val lineHeightMultiplier: Float = 1.25f,
     val align: TextAlign = TextAlign.START,
     /** 0f = fully transparent background, 1f = fully opaque. */
-    val backgroundOpacity: Float = 0.35f,
+    val backgroundOpacity: Float = 0.25f,
     val backgroundColor: Color = Color.Black,
     /** Horizontal padding inside the floating window, in dp. */
     val horizontalMarginDp: Int = 16,

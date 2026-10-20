@@ -18,6 +18,9 @@ import kotlin.coroutines.coroutineContext
  * Frame-based continuous scrolling is tied to `withFrameNanos`, so it stays
  * smooth when the display refresh rate changes (e.g. 60 Hz vs 120 Hz).
  *
+ * Auto-scrolling yields to the user: while a manual drag is in progress the
+ * engine stops advancing, so touch scrolling and auto-scroll don't fight.
+ *
  * Word- and line-based modes use the live [TextLayoutResult] so the engine can
  * target the exact vertical position of each word / line, and reports the
  * current word range back to the UI for highlighting.
@@ -46,6 +49,11 @@ class ScrollEngine(
         var last = 0L
         while (coroutineContext.isActive) {
             val now = withFrameNanos { it }
+            // Let the user scroll by hand without the engine pulling back.
+            if (scrollState.isScrollInProgress) {
+                last = now
+                continue
+            }
             if (last != 0L) {
                 val dtSeconds = (now - last) / 1_000_000_000.0
                 val remaining = (scrollState.maxValue - scrollState.value).toFloat()
@@ -63,6 +71,7 @@ class ScrollEngine(
         val intervalMs = (2200f - settings.scrollSpeedPxPerSec * 4f).coerceIn(150f, 2200f)
         for (i in 0 until lr.lineCount) {
             if (!coroutineContext.isActive) return
+            awaitManualScrollEnd()
             val target = lr.getLineTop(i).coerceIn(0f, scrollState.maxValue.toFloat())
             scrollState.animateScrollTo(target.toInt())
             delay(intervalMs.toLong())
@@ -78,6 +87,7 @@ class ScrollEngine(
         val anchor = 0.30f // keep the active word ~30% down the viewport
         for (span in words) {
             if (!coroutineContext.isActive) return
+            awaitManualScrollEnd()
             val box = runCatching { lr.getBoundingBox(span.start) }.getOrNull()
             val viewport = scrollState.viewportSize
             val target = if (box != null && viewport > 0) {
@@ -86,6 +96,13 @@ class ScrollEngine(
             onWordRange(span.start until span.end)
             scrollState.animateScrollTo(target.toInt())
             delay(intervalMs.toLong())
+        }
+    }
+
+    /** Waits for any in-progress manual drag to finish before stepping. */
+    private suspend fun awaitManualScrollEnd() {
+        while (scrollState.isScrollInProgress && coroutineContext.isActive) {
+            delay(50)
         }
     }
 }

@@ -12,9 +12,12 @@ object OverlayConstants {
 
     /** Intents used by the UI to update the running overlay. */
     const val ACTION_SET_SCRIPT = "com.floatscript.app.action.SET_SCRIPT"
-    const val ACTION_APPLY_SETTINGS = "com.floatscript.app.action.APPLY_SETTINGS"
+    const val ACTION_SET_SCRIPT_IF_CURRENT = "com.floatscript.app.action.SET_SCRIPT_IF_CURRENT"
     const val EXTRA_SCRIPT_ID = "extra_script_id"
 
     const val MIN_WINDOW_WIDTH_DP = 160
     const val MIN_WINDOW_HEIGHT_DP = 120
+
+    /** Default floating-window height as a fraction of the screen. */
+    const val DEFAULT_HEIGHT_FRACTION = 0.40f
 }

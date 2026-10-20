@@ -8,6 +8,7 @@ import android.net.Uri
 import android.os.Build
 import android.provider.Settings
 import android.text.format.DateUtils
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -94,6 +95,7 @@ fun HomeScreen(
 
     var overlayPermissionGranted by remember { mutableStateOf(Settings.canDrawOverlays(context)) }
     var showRename by remember { mutableStateOf<Script?>(null) }
+    var topMenuOpen by remember { mutableStateOf(false) }
 
     val overlayPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -110,6 +112,38 @@ fun HomeScreen(
             val text = readTextFromUri(context, it) ?: return@let
             val name = it.lastPathSegment?.substringAfterLast('/')?.removeSuffix(".txt") ?: "Imported script"
             viewModel.createScript(name, text) { id -> onEditScript(id) }
+        }
+    }
+
+    val createBackupLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json")
+    ) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        viewModel.buildBackup { json ->
+            val ok = runCatching {
+                context.contentResolver.openOutputStream(uri)?.use { it.write(json.toByteArray()) }
+            }.isSuccess
+            Toast.makeText(
+                context,
+                context.getString(if (ok) R.string.backup_saved else R.string.backup_failed),
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    val openBackupLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        val json = readTextFromUri(context, uri)
+        if (json == null) {
+            Toast.makeText(context, context.getString(R.string.restore_failed), Toast.LENGTH_SHORT).show()
+            return@rememberLauncherForActivityResult
+        }
+        viewModel.restoreBackup(json) { count ->
+            val msg = if (count >= 0) context.getString(R.string.restore_done, count)
+            else context.getString(R.string.restore_failed)
+            Toast.makeText(context, msg, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -137,6 +171,27 @@ fun HomeScreen(
                     }
                     IconButton(onClick = onOpenSettings) {
                         Icon(Icons.Filled.Settings, contentDescription = stringResource(R.string.home_settings))
+                    }
+                    Box {
+                        IconButton(onClick = { topMenuOpen = true }) {
+                            Icon(Icons.Filled.MoreVert, contentDescription = stringResource(R.string.home_more))
+                        }
+                        DropdownMenu(expanded = topMenuOpen, onDismissRequest = { topMenuOpen = false }) {
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.backup_scripts)) },
+                                onClick = {
+                                    topMenuOpen = false
+                                    createBackupLauncher.launch("floatscript-backup.json")
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.restore_scripts)) },
+                                onClick = {
+                                    topMenuOpen = false
+                                    openBackupLauncher.launch(arrayOf("application/json", "text/plain"))
+                                }
+                            )
+                        }
                     }
                 }
             )

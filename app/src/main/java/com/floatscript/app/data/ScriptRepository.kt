@@ -5,6 +5,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * Single source of truth for scripts. The UI layer only ever sees the domain
@@ -50,6 +52,55 @@ class ScriptRepository(private val dao: ScriptDao) {
     }
 
     suspend fun deleteById(id: Long) = withContext(Dispatchers.IO) { dao.deleteById(id) }
+
+    /**
+     * Serialises every script to a small JSON document for local backup.
+     * Uses org.json so no extra serialisation dependency is needed.
+     */
+    suspend fun exportAll(): String = withContext(Dispatchers.IO) {
+        val array = JSONArray()
+        dao.getAll().forEach { entity ->
+            array.put(
+                JSONObject()
+                    .put("title", entity.title)
+                    .put("body", entity.body)
+                    .put("updatedAt", entity.updatedAt)
+            )
+        }
+        JSONObject()
+            .put("app", "FloatScript")
+            .put("version", 1)
+            .put("exportedAt", System.currentTimeMillis())
+            .put("scripts", array)
+            .toString(2)
+    }
+
+    /**
+     * Restores scripts from a backup produced by [exportAll]. Existing scripts
+     * are left untouched; imported ones are added as new entries. Returns the
+     * number of scripts imported, or -1 if the file could not be parsed.
+     */
+    suspend fun importAll(json: String): Int = withContext(Dispatchers.IO) {
+        runCatching {
+            val root = JSONObject(json)
+            val array = root.optJSONArray("scripts") ?: return@runCatching -1
+            var imported = 0
+            for (i in 0 until array.length()) {
+                val obj = array.optJSONObject(i) ?: continue
+                val title = obj.optString("title").ifBlank { "Imported script" }
+                val body = obj.optString("body")
+                dao.insert(
+                    ScriptEntity(
+                        title = title,
+                        body = body,
+                        updatedAt = obj.optLong("updatedAt", System.currentTimeMillis())
+                    )
+                )
+                imported++
+            }
+            imported
+        }.getOrDefault(-1)
+    }
 
     /** Inserts the first-run sample script if the database is empty. */
     suspend fun seedIfEmpty(sampleTitle: String, sampleBody: String) = withContext(Dispatchers.IO) {

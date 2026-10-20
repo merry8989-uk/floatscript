@@ -23,6 +23,10 @@ class TeleprompterState(initialSettings: ScriptSettings) {
     private val _body = MutableStateFlow("")
     val body: StateFlow<String> = _body.asStateFlow()
 
+    /** Id of the script currently on screen (0 = none). */
+    var currentScriptId: Long = 0L
+        private set
+
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying.asStateFlow()
 
@@ -30,7 +34,12 @@ class TeleprompterState(initialSettings: ScriptSettings) {
     private val _countdown = MutableStateFlow(0)
     val countdown: StateFlow<Int> = _countdown.asStateFlow()
 
-    private val _controlsVisible = MutableStateFlow(true)
+    /**
+     * Whether the compact control strip is shown. In minimal mode it starts
+     * hidden (script only) but a tap on the script brings it back — so minimal
+     * mode never traps the user without a way to start or stop playback.
+     */
+    private val _controlsVisible = MutableStateFlow(!initialSettings.minimalMode)
     val controlsVisible: StateFlow<Boolean> = _controlsVisible.asStateFlow()
 
     /** Incrementing this forces the scroll engine to jump back to the top. */
@@ -41,11 +50,15 @@ class TeleprompterState(initialSettings: ScriptSettings) {
     private val _closeRequested = MutableStateFlow(false)
     val closeRequested: StateFlow<Boolean> = _closeRequested.asStateFlow()
 
-    fun setScript(title: String, body: String) {
+    val isCountingDown: Boolean get() = _countdown.value > 0
+
+    fun setScript(id: Long, title: String, body: String) {
+        currentScriptId = id
         _title.value = title
         _body.value = body
     }
 
+    /** Applies settings coming from outside the overlay (e.g. the Settings screen). */
     fun applySettings(new: ScriptSettings) {
         _settings.value = new
     }
@@ -55,12 +68,13 @@ class TeleprompterState(initialSettings: ScriptSettings) {
     fun requestClose() { _closeRequested.value = true }
 
     fun togglePlay() {
-        if (_isPlaying.value) pause() else play()
+        if (_isPlaying.value || isCountingDown) pause() else play()
     }
 
     fun play() {
+        if (isCountingDown) return // already counting down — ignore
         val s = _settings.value
-        if (_countdown.value == 0 && s.countdownSeconds > 0) {
+        if (s.countdownSeconds > 0) {
             _countdown.value = s.countdownSeconds
         } else {
             _isPlaying.value = true
@@ -69,22 +83,29 @@ class TeleprompterState(initialSettings: ScriptSettings) {
 
     /** Called by the UI when the countdown reaches zero. */
     fun onCountdownFinished() {
+        if (!isCountingDown) return // cancelled in the meantime
         _countdown.value = 0
         _isPlaying.value = true
     }
 
-    fun pause() { _isPlaying.value = false }
+    /** Pause playback and cancel any running countdown. */
+    fun pause() {
+        _isPlaying.value = false
+        _countdown.value = 0
+    }
 
     fun restart() {
         _isPlaying.value = false
+        _countdown.value = 0
         _restartKey.update { it + 1 }
         play()
     }
 
+    /** Stop: pause, cancel the countdown and jump back to the top. */
     fun stop() {
         _isPlaying.value = false
-        _restartKey.update { it + 1 }
         _countdown.value = 0
+        _restartKey.update { it + 1 }
     }
 
     fun toggleControls() { _controlsVisible.update { !it } }
@@ -104,6 +125,7 @@ class TeleprompterState(initialSettings: ScriptSettings) {
         it.copy(fontSizeSp = (it.fontSizeSp + delta).coerceIn(ScriptSettings.MIN_FONT_SP, ScriptSettings.MAX_FONT_SP))
     }
 
+    /** Cycles continuous -> line-by-line -> word-by-word, straight from the overlay. */
     fun cycleScrollMode() = _settings.update {
         val modes = ScrollMode.entries
         it.copy(scrollMode = modes[(modes.indexOf(it.scrollMode) + 1) % modes.size])

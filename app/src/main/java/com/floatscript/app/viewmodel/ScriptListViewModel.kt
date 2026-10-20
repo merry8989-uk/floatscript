@@ -20,9 +20,6 @@ class ScriptListViewModel(
     val scriptList: StateFlow<List<Script>> = scripts.scripts
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    val lastUsedId: StateFlow<Long> = settings.lastScriptId
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), 0L)
-
     /** Makes [script] the active script and launches (or updates) the overlay. */
     fun startOverlay(context: Context, script: Script) {
         viewModelScope.launch { settings.setLastScriptId(script.id) }
@@ -48,4 +45,16 @@ class ScriptListViewModel(
         viewModelScope.launch { scripts.rename(script.id, newTitle) }
 
     fun delete(script: Script) = viewModelScope.launch { scripts.delete(script) }
+
+    // ---- Local backup / restore ---------------------------------------------
+
+    /** Produces a JSON backup of every script and hands it back on the main thread. */
+    fun buildBackup(onReady: (String) -> Unit) {
+        viewModelScope.launch { onReady(scripts.exportAll()) }
+    }
+
+    /** Restores scripts from a JSON backup; [onResult] gets the count, or -1 on failure. */
+    fun restoreBackup(json: String, onResult: (Int) -> Unit) {
+        viewModelScope.launch { onResult(scripts.importAll(json)) }
+    }
 }

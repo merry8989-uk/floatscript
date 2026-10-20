@@ -22,7 +22,18 @@ Built with **Kotlin + Jetpack Compose**, **MVVM**, **Room**, **DataStore**,
 
 ## Getting the APK
 
-Three ways, easiest first:
+**Releases are automatic.** `.github/workflows/release.yml` runs on every push to
+`main`: it reads `versionName` from `app/build.gradle.kts`, creates the matching
+tag (e.g. `v1.1.0`) if it doesn't exist yet, builds the release APK and publishes
+a GitHub Release with `FloatScript-<tag>.apk` attached. You can also trigger it
+manually (Actions -> Release APK -> Run workflow) or just push a tag yourself.
+
+> The release APK is signed with the **debug keystore** unless you add the
+> `KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS` and `KEY_PASSWORD`
+> repository secrets — then it is signed with your real release key instead.
+> Bump `versionCode`/`versionName` in `app/build.gradle.kts` before releasing.
+
+Other ways, easiest first:
 
 **1. GitHub Actions (no local setup needed).** A ready-made workflow is included
 at `.github/workflows/android.yml`. Push the project to a GitHub repo and the

@@ -91,6 +91,19 @@
     <string name="record_error">Recording problem: %1$s</string>
     <string name="record_finalized">Video saved to your gallery</string>
 
+    <!-- Diagnostics -->
+    <string name="diagnostics_title">Diagnostics</string>
+    <string name="diagnostics_open">Diagnostics</string>
+    <string name="diagnostics_intro">These logs are stored only on this device and are never uploaded. Share them yourself if you want to report a problem.</string>
+    <string name="diagnostics_share">Share</string>
+    <string name="diagnostics_save">Save to file</string>
+    <string name="diagnostics_clear">Clear</string>
+    <string name="diagnostics_refresh">Refresh</string>
+    <string name="diagnostics_crash_banner">A crash report from the previous run is available.</string>
+    <string name="diagnostics_share_crash">Share crash report</string>
+    <string name="diagnostics_saved">Report saved</string>
+    <string name="diagnostics_save_failed">Could not save the report</string>
+
     <!-- Misc -->
     <string name="permission_overlay_rationale">FloatScript needs permission to draw over other apps so the teleprompter can float above your camera.</string>
     <string name="permission_grant">Grant</string>

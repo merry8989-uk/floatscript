@@ -66,6 +66,7 @@ private val BG_COLORS = listOf(
 @Composable
 fun SettingsScreen(
     onBack: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val s by viewModel.settings.collectAsStateWithLifecycle()
@@ -203,6 +204,19 @@ fun SettingsScreen(
                 }
             )
             ToggleRow(stringResource(R.string.settings_minimal_mode), s.minimalMode, viewModel::setMinimal)
+
+            SectionTitle(stringResource(R.string.diagnostics_title))
+            Text(
+                stringResource(R.string.diagnostics_intro),
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+            OutlinedButton(
+                onClick = onOpenDiagnostics,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(stringResource(R.string.diagnostics_open))
+            }
 
             Spacer(Modifier.height(24.dp))
         }

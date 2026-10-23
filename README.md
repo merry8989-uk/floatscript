@@ -107,6 +107,20 @@ store-assets/                      # Play Store icon, feature graphic, listing n
 PRIVACY.md                         # Privacy policy
 ```
 
+## Diagnostics
+
+FloatScript keeps a **local-only** diagnostics log: a bounded in-memory buffer
+(500 entries), a rolling file capped at 256 KB, and a crash report written if
+the app dies from an uncaught exception.
+
+Nothing is uploaded — the app declares **no INTERNET permission** and contains
+no analytics or crash-reporting SDK. You can view, share, export or clear the
+log from **Settings -> Diagnostics** (or the home screen's ⋮ menu). Sharing uses
+a `FileProvider`, so the file is handed to whichever app you pick.
+
+This keeps the privacy policy honest while still giving you something concrete
+to attach to a bug report.
+
 ## Testing
 
 ```bash

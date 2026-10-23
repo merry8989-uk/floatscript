@@ -25,6 +25,7 @@ import androidx.lifecycle.lifecycleScope
 import com.floatscript.app.FloatScriptApp
 import com.floatscript.app.MainActivity
 import com.floatscript.app.R
+import com.floatscript.app.diagnostics.Diagnostics
 import com.floatscript.app.model.OverlayGeometry
 import com.floatscript.app.model.ScriptSettings
 import com.floatscript.app.ui.theme.FloatScriptTheme
@@ -67,6 +68,7 @@ class OverlayService : LifecycleService() {
         windowManager = getSystemService(Context.WINDOW_SERVICE) as WindowManager
         readScreenMetrics()
 
+        Diagnostics.i("Overlay", "service created")
         createNotificationChannel()
         startInForeground()
 
@@ -138,6 +140,7 @@ class OverlayService : LifecycleService() {
 
     private fun buildOverlay() {
         if (!Settings.canDrawOverlays(this)) {
+            Diagnostics.w("Overlay", "display-over-other-apps permission not granted; stopping")
             stopSelf()
             return
         }
@@ -296,7 +299,10 @@ class OverlayService : LifecycleService() {
         val app = application as FloatScriptApp
         lifecycleScope.launch {
             if (onlyIfCurrent && (!::state.isInitialized || state.currentScriptId != id)) return@launch
-            val script = app.scriptRepository.get(id) ?: return@launch
+            val script = app.scriptRepository.get(id) ?: run {
+                Diagnostics.w("Overlay", "script $id not found")
+                return@launch
+            }
             if (::state.isInitialized) state.setScript(script.id, script.title, script.body)
             app.settingsRepository.setLastScriptId(id)
         }
@@ -312,6 +318,7 @@ class OverlayService : LifecycleService() {
     }
 
     override fun onDestroy() {
+        Diagnostics.i("Overlay", "service destroyed")
         isRunning = false
         saveGeometryJob?.cancel()
         rootView?.let { runCatching { windowManager.removeView(it) } }
@@ -349,7 +356,10 @@ class OverlayService : LifecycleService() {
                     ServiceInfo.FOREGROUND_SERVICE_TYPE_SPECIAL_USE
                 } else 0
             )
-        }.onFailure { stopSelf() }
+        }.onFailure {
+            Diagnostics.e("Overlay", "startForeground refused", it)
+            stopSelf()
+        }
     }
 
     private fun buildNotification(playing: Boolean): Notification {

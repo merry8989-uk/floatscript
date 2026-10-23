@@ -59,6 +59,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import com.floatscript.app.R
+import com.floatscript.app.diagnostics.Diagnostics
 import com.floatscript.app.overlay.OverlayService
 import com.floatscript.app.ui.icons.AppIcons
 import java.text.SimpleDateFormat
@@ -119,6 +120,7 @@ fun RecordScreen(onBack: () -> Unit) {
                 provider.unbindAll()
                 provider.bindToLifecycle(lifecycleOwner, selector, preview, videoCapture)
             }.onFailure {
+                Diagnostics.e("Camera", "bindToLifecycle failed", it)
                 Toast.makeText(context, "Camera unavailable: ${it.message}", Toast.LENGTH_LONG).show()
             }
         }, ContextCompat.getMainExecutor(context))
@@ -216,12 +218,14 @@ fun RecordScreen(onBack: () -> Unit) {
                                             recording = null
                                             if (event.hasError()) {
                                                 val reason = event.cause?.message ?: event.error.toString()
+                                                Diagnostics.e("Camera", "recording failed: $reason (code ${event.error})")
                                                 Toast.makeText(
                                                     context,
                                                     context.getString(R.string.record_error, reason),
                                                     Toast.LENGTH_LONG
                                                 ).show()
                                             } else {
+                                                Diagnostics.i("Camera", "recording finished and saved")
                                                 Toast.makeText(
                                                     context,
                                                     context.getString(R.string.record_finalized),
@@ -233,6 +237,7 @@ fun RecordScreen(onBack: () -> Unit) {
                                     }
                                 }
                             }.onFailure {
+                                Diagnostics.e("Camera", "could not start recording", it)
                                 isRecording = false
                                 Toast.makeText(
                                     context,

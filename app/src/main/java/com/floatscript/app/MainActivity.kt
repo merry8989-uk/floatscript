@@ -10,6 +10,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.floatscript.app.ui.diagnostics.DiagnosticsScreen
 import com.floatscript.app.ui.editor.ScriptEditorScreen
 import com.floatscript.app.ui.home.HomeScreen
 import com.floatscript.app.ui.record.RecordScreen
@@ -32,6 +33,7 @@ object Routes {
     const val HOME = "home"
     const val EDITOR = "editor"
     const val SETTINGS = "settings"
+    const val DIAGNOSTICS = "diagnostics"
     const val RECORD = "record"
 
     fun editor(id: Long) = "$EDITOR/$id"
@@ -46,7 +48,8 @@ fun AppNavHost() {
             HomeScreen(
                 onEditScript = { id -> navController.navigate(Routes.editor(id)) },
                 onOpenSettings = { navController.navigate(Routes.SETTINGS) },
-                onOpenRecording = { navController.navigate(Routes.RECORD) }
+                onOpenRecording = { navController.navigate(Routes.RECORD) },
+                onOpenDiagnostics = { navController.navigate(Routes.DIAGNOSTICS) }
             )
         }
 
@@ -62,7 +65,14 @@ fun AppNavHost() {
         }
 
         composable(Routes.SETTINGS) {
-            SettingsScreen(onBack = { navController.popBackStack() })
+            SettingsScreen(
+                onBack = { navController.popBackStack() },
+                onOpenDiagnostics = { navController.navigate(Routes.DIAGNOSTICS) }
+            )
+        }
+
+        composable(Routes.DIAGNOSTICS) {
+            DiagnosticsScreen(onBack = { navController.popBackStack() })
         }
 
         composable(Routes.RECORD) {

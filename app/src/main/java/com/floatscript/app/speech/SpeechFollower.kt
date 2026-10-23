@@ -9,6 +9,7 @@ import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
 import androidx.core.content.ContextCompat
+import com.floatscript.app.diagnostics.Diagnostics
 import java.util.Locale
 
 /**
@@ -41,6 +42,7 @@ class SpeechFollower(
         override fun onEndOfSpeech() {}
 
         override fun onError(error: Int) {
+            Diagnostics.w("Speech", "recogniser error $error")
             onError(error)
             if (isFatal(error)) {
                 stop()
@@ -48,6 +50,7 @@ class SpeechFollower(
             }
             consecutiveErrors++
             if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                Diagnostics.w("Speech", "stopping after $consecutiveErrors consecutive errors")
                 stop()
                 return
             }
@@ -94,6 +97,7 @@ class SpeechFollower(
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) !=
             PackageManager.PERMISSION_GRANTED
         ) {
+            Diagnostics.w("Speech", "microphone permission missing; speech-follow not started")
             onError(SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS)
             return
         }

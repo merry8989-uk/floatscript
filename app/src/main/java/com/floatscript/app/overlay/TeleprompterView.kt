@@ -46,6 +46,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.floatscript.app.R
+import com.floatscript.app.diagnostics.Diagnostics
 import com.floatscript.app.model.ScriptSettings
 import com.floatscript.app.model.TextAlign as AlignModel
 import com.floatscript.app.speech.SpeechFollower
@@ -114,7 +115,10 @@ fun TeleprompterView(
         // fail and (previously) spin in a restart loop, so bail out early.
         val micGranted = ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) ==
             PackageManager.PERMISSION_GRANTED
-        if (!micGranted) return@LaunchedEffect
+        if (!micGranted) {
+            Diagnostics.w("Speech", "speech-follow enabled but the microphone permission is missing")
+            return@LaunchedEffect
+        }
 
         val scriptWords = TextTokenizer.words(body)
         var pointer = 0

@@ -14,6 +14,7 @@ operated by us.**
 | Your scripts (title + text) | Local database on your device (Room) | So your scripts are there next time |
 | Settings (font, colour, speed, mode, …) and floating-window position | Local app preferences (DataStore) | To restore your setup |
 | Videos you record with the built-in recorder | Your device's gallery (MediaStore) | That is the recording you asked for |
+| Diagnostics log and crash reports | Private app storage on your device | To help you (or us) diagnose a problem |
 
 None of this leaves your device unless **you** explicitly export it (see
 "Backup and restore" below).
@@ -50,6 +51,17 @@ upload it anywhere.
 Separately, if you have Android's device backup enabled in system settings,
 Android may include the app's local data in your device backup. That is
 controlled by your Android settings, not by the app.
+
+## Diagnostics and crash reports
+
+The app keeps a small rolling diagnostics log and, if it crashes, writes a crash
+report containing the stack trace, the app version, your Android version and
+device model, and the last few log lines.
+
+**All of this stays on your device.** The app does not request the INTERNET
+permission and has no code that uploads anything. You can review, share, export
+or delete these logs yourself from **Settings -> Diagnostics**; they are only
+ever sent anywhere if *you* choose to share them.
 
 ## Analytics, ads and tracking
 

@@ -69,6 +69,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.floatscript.app.R
 import com.floatscript.app.model.Script
 import com.floatscript.app.overlay.OverlayService
+import com.floatscript.app.diagnostics.Diagnostics
 import com.floatscript.app.ui.editor.ScriptEditorContent
 import com.floatscript.app.ui.icons.AppIcons
 import com.floatscript.app.viewmodel.AppViewModelProvider
@@ -80,6 +81,7 @@ fun HomeScreen(
     onEditScript: (Long) -> Unit,
     onOpenSettings: () -> Unit,
     onOpenRecording: () -> Unit,
+    onOpenDiagnostics: () -> Unit,
     viewModel: ScriptListViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val context = LocalContext.current
@@ -172,6 +174,7 @@ fun HomeScreen(
         if (started) {
             overlayRunning = true
         } else {
+            Diagnostics.w("Overlay", "system refused to start the foreground service")
             Toast.makeText(context, context.getString(R.string.overlay_start_failed), Toast.LENGTH_LONG).show()
         }
     }
@@ -204,6 +207,13 @@ fun HomeScreen(
                                 onClick = {
                                     topMenuOpen = false
                                     openBackupLauncher.launch(arrayOf("application/json", "text/plain"))
+                                }
+                            )
+                            DropdownMenuItem(
+                                text = { Text(stringResource(R.string.diagnostics_open)) },
+                                onClick = {
+                                    topMenuOpen = false
+                                    onOpenDiagnostics()
                                 }
                             )
                         }

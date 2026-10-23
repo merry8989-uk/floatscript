@@ -77,6 +77,11 @@ includes its own recorder, so prompting and recording always work together.
 | Do you provide a way for users to request that their data is deleted? | Yes — delete scripts in-app, clear app storage, or uninstall |
 | Data types collected | None |
 
+Diagnostics: the app writes a local log and crash reports, but **nothing leaves
+the device** (no INTERNET permission, no crash-reporting SDK), so it still counts
+as not collecting data. If you ever add a remote reporter, this answer must
+change.
+
 Note: the app uses the camera and microphone **on-device only**. Android's data
 safety form treats on-device-only processing as not "collected", but you must
 declare the camera/microphone *permissions* and explain them in the listing.

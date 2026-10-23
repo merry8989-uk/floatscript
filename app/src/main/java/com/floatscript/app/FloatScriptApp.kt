@@ -5,6 +5,7 @@ import com.floatscript.app.data.AppDatabase
 import com.floatscript.app.data.ScriptRepository
 import com.floatscript.app.data.SettingsRepository
 import com.floatscript.app.data.SampleScripts
+import com.floatscript.app.diagnostics.Diagnostics
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -29,6 +30,8 @@ class FloatScriptApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Local-only diagnostics: log buffer + crash reports. Nothing is sent anywhere.
+        Diagnostics.init(this)
         applicationScope.launch {
             scriptRepository.seedIfEmpty(
                 sampleTitle = SampleScripts.SAMPLE_TITLE,

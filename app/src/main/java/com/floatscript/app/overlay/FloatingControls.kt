@@ -119,8 +119,8 @@ fun FloatingControls(
 private fun ControlButton(
     icon: ImageVector,
     desc: String,
-    state: String? = null,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    state: String? = null
 ) {
     // 44dp keeps the strip compact while staying close to the 48dp a11y target;
     // Material's IconButton already expands the touch area.

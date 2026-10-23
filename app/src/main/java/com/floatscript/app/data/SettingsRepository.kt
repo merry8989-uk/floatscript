@@ -46,10 +46,10 @@ class SettingsRepository(private val context: Context) {
         val SPEECH_FOLLOW = booleanPreferencesKey("speech_follow")
         val MINIMAL = booleanPreferencesKey("minimal")
         val LAST_SCRIPT_ID = longPreferencesKey("last_script_id")
-        val GEO_X = intPreferencesKey("geo_x")
-        val GEO_Y = intPreferencesKey("geo_y")
-        val GEO_W = intPreferencesKey("geo_w")
-        val GEO_H = intPreferencesKey("geo_h")
+        val GEO_XF = floatPreferencesKey("geo_x_fraction")
+        val GEO_YF = floatPreferencesKey("geo_y_fraction")
+        val GEO_WF = floatPreferencesKey("geo_w_fraction")
+        val GEO_HF = floatPreferencesKey("geo_h_fraction")
     }
 
     private val prefs: Flow<Preferences> = context.dataStore.data
@@ -80,10 +80,10 @@ class SettingsRepository(private val context: Context) {
     val geometry: Flow<OverlayGeometry> = prefs.map { p ->
         val d = OverlayGeometry()
         OverlayGeometry(
-            x = p[Keys.GEO_X] ?: d.x,
-            y = p[Keys.GEO_Y] ?: d.y,
-            width = p[Keys.GEO_W] ?: d.width,
-            height = p[Keys.GEO_H] ?: d.height
+            xFraction = p[Keys.GEO_XF] ?: d.xFraction,
+            yFraction = p[Keys.GEO_YF] ?: d.yFraction,
+            widthFraction = p[Keys.GEO_WF] ?: d.widthFraction,
+            heightFraction = p[Keys.GEO_HF] ?: d.heightFraction
         )
     }
 
@@ -113,10 +113,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun saveGeometry(g: OverlayGeometry) {
         context.dataStore.edit { p ->
-            p[Keys.GEO_X] = g.x
-            p[Keys.GEO_Y] = g.y
-            p[Keys.GEO_W] = g.width
-            p[Keys.GEO_H] = g.height
+            p[Keys.GEO_XF] = g.xFraction
+            p[Keys.GEO_YF] = g.yFraction
+            p[Keys.GEO_WF] = g.widthFraction
+            p[Keys.GEO_HF] = g.heightFraction
         }
     }
 

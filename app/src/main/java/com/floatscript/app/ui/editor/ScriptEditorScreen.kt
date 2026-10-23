@@ -10,7 +10,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -32,12 +32,20 @@ import com.floatscript.app.overlay.OverlayService
 import com.floatscript.app.viewmodel.AppViewModelProvider
 import com.floatscript.app.viewmodel.ScriptEditorViewModel
 
-@OptIn(ExperimentalMaterial3Api::class)
+/**
+ * The editor form on its own, without any scaffolding. Used both by
+ * [ScriptEditorScreen] (phone) and by the two-pane tablet layout on the home
+ * screen.
+ */
 @Composable
-fun ScriptEditorScreen(
+fun ScriptEditorContent(
     scriptId: Long,
-    onBack: () -> Unit,
-    viewModel: ScriptEditorViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    onSaved: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+    viewModel: ScriptEditorViewModel = viewModel(
+        key = "editor-$scriptId",
+        factory = AppViewModelProvider.Factory
+    )
 ) {
     val context = LocalContext.current
     viewModel.load(scriptId)
@@ -45,6 +53,58 @@ fun ScriptEditorScreen(
     val title by viewModel.title.collectAsStateWithLifecycle()
     val body by viewModel.body.collectAsStateWithLifecycle()
 
+    Column(
+        modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(12.dp)
+    ) {
+        OutlinedTextField(
+            value = title,
+            onValueChange = viewModel::onTitleChange,
+            label = { Text(stringResource(R.string.editor_name_hint)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth()
+        )
+        OutlinedTextField(
+            value = body,
+            onValueChange = viewModel::onBodyChange,
+            label = { Text(stringResource(R.string.editor_body_hint)) },
+            minLines = 10,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+        )
+        OutlinedButton(
+            onClick = { readClipboard(context)?.let(viewModel::appendText) },
+            modifier = Modifier.padding(top = 12.dp)
+        ) {
+            Text(stringResource(R.string.home_paste_clipboard))
+        }
+        Button(
+            onClick = {
+                viewModel.save { id ->
+                    // If this script is the one on screen, refresh the overlay.
+                    OverlayService.updateIfCurrent(context, id)
+                    onSaved(id)
+                }
+            },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 12.dp)
+        ) {
+            Text(stringResource(R.string.action_save))
+        }
+    }
+}
+
+/** Full-screen editor used on phones. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun ScriptEditorScreen(
+    scriptId: Long,
+    onBack: () -> Unit
+) {
     Scaffold(
         topBar = {
             TopAppBar(
@@ -53,51 +113,15 @@ fun ScriptEditorScreen(
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = null)
                     }
-                },
-                actions = {
-                    IconButton(onClick = {
-                        viewModel.save { id ->
-                            // If this script is the one on screen, refresh the overlay.
-                            OverlayService.updateIfCurrent(context, id)
-                            onBack()
-                        }
-                    }) {
-                        Icon(Icons.Filled.Check, contentDescription = stringResource(R.string.action_save))
-                    }
                 }
             )
         }
     ) { padding ->
-        Column(
-            Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(12.dp)
-                .verticalScroll(rememberScrollState())
-        ) {
-            OutlinedTextField(
-                value = title,
-                onValueChange = viewModel::onTitleChange,
-                label = { Text(stringResource(R.string.editor_name_hint)) },
-                singleLine = true,
-                modifier = Modifier.fillMaxWidth()
-            )
-            OutlinedTextField(
-                value = body,
-                onValueChange = viewModel::onBodyChange,
-                label = { Text(stringResource(R.string.editor_body_hint)) },
-                minLines = 12,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 12.dp)
-            )
-            OutlinedButton(
-                onClick = { readClipboard(context)?.let(viewModel::appendText) },
-                modifier = Modifier.padding(top = 12.dp)
-            ) {
-                Text(stringResource(R.string.home_paste_clipboard))
-            }
-        }
+        ScriptEditorContent(
+            scriptId = scriptId,
+            onSaved = { onBack() },
+            modifier = Modifier.padding(padding)
+        )
     }
 }
 

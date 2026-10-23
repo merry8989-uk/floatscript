@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Overlay service -->
+    <string name="overlay_channel_name">टेलीप्रॉम्प्टर ओवरले</string>
+    <string name="overlay_channel_desc">अन्य ऐप्स के ऊपर फ़्लोटिंग टेलीप्रॉम्प्टर चालू रखता है।</string>
+    <string name="overlay_notification_title">FloatScript चल रहा है</string>
+    <string name="overlay_notification_text">FloatScript पर वापस जाने के लिए टैप करें</string>
+    <string name="overlay_action_stop">रोकें</string>
+
+    <!-- Home -->
+    <string name="home_start_overlay">टेलीप्रॉम्प्टर शुरू करें</string>
+    <string name="home_stop_overlay">टेलीप्रॉम्प्टर बंद करें</string>
+    <string name="home_new_script">नई स्क्रिप्ट</string>
+    <string name="home_import_txt">.txt आयात करें</string>
+    <string name="home_paste_clipboard">क्लिपबोर्ड से पेस्ट करें</string>
+    <string name="home_settings">सेटिंग्स</string>
+    <string name="home_empty">अभी कोई स्क्रिप्ट नहीं है। शुरू करने के लिए एक बनाएँ।</string>
+    <string name="home_more">और</string>
+    <string name="select_script_to_edit">संपादित करने के लिए स्क्रिप्ट चुनें</string>
+
+    <!-- Editor -->
+    <string name="editor_title">स्क्रिप्ट संपादित करें</string>
+    <string name="editor_name_hint">स्क्रिप्ट का नाम</string>
+    <string name="editor_body_hint">अपनी स्क्रिप्ट यहाँ लिखें या पेस्ट करें…</string>
+    <string name="action_save">सहेजें</string>
+    <string name="action_cancel">रद्द करें</string>
+    <string name="action_rename">नाम बदलें</string>
+    <string name="action_duplicate">प्रतिलिपि बनाएँ</string>
+    <string name="action_delete">हटाएँ</string>
+    <string name="action_edit">संपादित करें</string>
+    <string name="action_use">उपयोग करें</string>
+
+    <!-- Settings -->
+    <string name="settings_title">टेलीप्रॉम्प्टर सेटिंग्स</string>
+    <string name="settings_appearance">दिखावट</string>
+    <string name="settings_scrolling">स्क्रॉलिंग</string>
+    <string name="settings_advanced">उन्नत</string>
+    <string name="settings_text_color">टेक्स्ट का रंग</string>
+    <string name="settings_text_size">फ़ॉन्ट आकार</string>
+    <string name="settings_font_weight">फ़ॉन्ट वज़न</string>
+    <string name="settings_bold">बोल्ड टेक्स्ट</string>
+    <string name="settings_scroll_mode">स्क्रॉल मोड</string>
+    <string name="settings_line_spacing">लाइन स्पेसिंग</string>
+    <string name="settings_alignment">संरेखण</string>
+    <string name="settings_bg_opacity">बैकग्राउंड अपारदर्शिता</string>
+    <string name="settings_bg_tint">बैकग्राउंड रंग</string>
+    <string name="settings_margin">टेक्स्ट मार्जिन</string>
+    <string name="settings_speed">स्क्रॉल गति</string>
+    <string name="settings_countdown">स्क्रॉल से पहले उलटी गिनती</string>
+    <string name="settings_hide_controls">स्क्रॉल करते समय कंट्रोल छिपाएँ</string>
+    <string name="settings_mirror_h">टेक्स्ट को क्षैतिज रूप से दर्पण करें</string>
+    <string name="settings_flip_v">टेक्स्ट को लंबवत पलटें</string>
+    <string name="settings_keep_awake">स्क्रीन चालू रखें</string>
+    <string name="settings_speech_follow">वाणी-अनुसरण मोड</string>
+    <string name="settings_minimal_mode">मिनिमल मोड (केवल स्क्रिप्ट)</string>
+    <string name="settings_word_by_word">शब्द-दर-शब्द हाइलाइट</string>
+
+    <!-- Recording -->
+    <string name="record_title">टेलीप्रॉम्प्टर के साथ रिकॉर्ड करें</string>
+    <string name="record_start">रिकॉर्डिंग शुरू करें</string>
+    <string name="record_stop">रिकॉर्डिंग बंद करें</string>
+    <string name="record_open_camera">कैमरा ऐप खोलें</string>
+    <string name="record_switch_camera">कैमरा बदलें</string>
+    <string name="record_saved">वीडियो आपकी गैलरी में सहेजा गया</string>
+    <string name="record_finalized">वीडियो आपकी गैलरी में सहेजा गया</string>
+    <string name="record_error">रिकॉर्डिंग में समस्या: %1$s</string>
+    <string name="record_permissions_title">इन-ऐप रिकॉर्डिंग के बारे में</string>
+    <string name="record_permissions_body">अंतर्निहित रिकॉर्डिंग CameraX का उपयोग करती है और उसे कैमरा अनुमति (आपको देखने के लिए) तथा माइक्रोफ़ोन अनुमति (ऑडियो रिकॉर्ड करने के लिए) चाहिए; माइक्रोफ़ोन न देने पर भी वीडियो बिना आवाज़ के रिकॉर्ड होगा। Android 13+ पर नोटिफ़िकेशन अनुमति केवल "रिकॉर्डिंग जारी है" सूचना को नियंत्रित करती है। कैमरा अनुमति न देने पर "कैमरा ऐप खोलें" का उपयोग करें — यह बाहरी तरीका है, जिसमें टेलीप्रॉम्प्टर आपके कैमरा ऐप के ऊपर तैरता है और किसी इन-ऐप अनुमति की आवश्यकता नहीं होती।</string>
+
+    <!-- Permissions -->
+    <string name="permission_overlay_rationale">टेलीप्रॉम्प्टर को आपके कैमरे के ऊपर दिखाने के लिए FloatScript को अन्य ऐप्स के ऊपर ड्रॉ करने की अनुमति चाहिए।</string>
+    <string name="permission_grant">अनुमति दें</string>
+    <string name="permission_open_settings">सेटिंग्स खोलें</string>
+    <string name="speech_permission_needed">वाणी-अनुसरण के लिए माइक्रोफ़ोन की अनुमति ज़रूरी है</string>
+    <string name="overlay_start_failed">टेलीप्रॉम्प्टर शुरू नहीं हो सका। कृपया ऐप से दोबारा कोशिश करें।</string>
+
+    <!-- Floating controls -->
+    <string name="cd_drag_handle">ड्रैग हैंडल</string>
+    <string name="cd_drag_strip">टेलीप्रॉम्प्टर हिलाने के लिए ड्रैग करें</string>
+    <string name="cd_resize">टेलीप्रॉम्प्टर का आकार बदलने के लिए ड्रैग करें</string>
+    <string name="cd_close">टेलीप्रॉम्प्टर बंद करें</string>
+    <string name="cd_play">चलाएँ</string>
+    <string name="cd_pause">रोकें</string>
+    <string name="cd_stop">बंद करें</string>
+    <string name="cd_restart">फिर से शुरू करें</string>
+    <string name="cd_speed_up">गति बढ़ाएँ</string>
+    <string name="cd_speed_down">गति घटाएँ</string>
+    <string name="cd_text_up">टेक्स्ट आकार बढ़ाएँ</string>
+    <string name="cd_text_down">टेक्स्ट आकार घटाएँ</string>
+    <string name="cd_toggle_controls">कंट्रोल छिपाएँ या दिखाएँ</string>
+    <string name="cd_scroll_mode">स्क्रॉल मोड</string>
+    <string name="state_playing">चल रहा है</string>
+    <string name="state_paused">रुका हुआ</string>
+
+    <!-- Backup / restore -->
+    <string name="backup_scripts">स्क्रिप्ट का बैकअप</string>
+    <string name="restore_scripts">स्क्रिप्ट पुनर्स्थापित करें</string>
+    <string name="backup_saved">बैकअप सहेजा गया</string>
+    <string name="backup_failed">बैकअप सहेजा नहीं जा सका</string>
+    <string name="restore_done">%1$d स्क्रिप्ट पुनर्स्थापित हुईं</string>
+    <string name="restore_failed">वह बैकअप फ़ाइल पढ़ी नहीं जा सकी</string>
+</resources>

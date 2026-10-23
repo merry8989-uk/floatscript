@@ -7,11 +7,20 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// ---- Versioning -------------------------------------------------------------
+// CI overrides both values: the release workflow passes -PversionName=<tag>
+// and -PversionCode=<run number>, so releases bump themselves. Local builds
+// fall back to the defaults below.
+val defaultVersionCode = 4
+val defaultVersionName = "1.1.2"
+val resolvedVersionCode = (findProperty("versionCode") as String?)?.toIntOrNull() ?: defaultVersionCode
+val resolvedVersionName = (findProperty("versionName") as String?)?.takeIf { it.isNotBlank() } ?: defaultVersionName
+
+// ---- Release signing --------------------------------------------------------
 // Release signing is optional: when CI provides a keystore through the
 // KEYSTORE_FILE / KEYSTORE_PASSWORD / KEY_ALIAS / KEY_PASSWORD environment
 // variables we sign with it, otherwise we fall back to the debug keystore so
-// `assembleRelease` still produces an installable APK (used for the
-// auto-generated GitHub releases).
+// `assembleRelease` still produces an installable APK.
 val releaseKeystorePath: String? = System.getenv("KEYSTORE_FILE")
 val hasReleaseKeystore: Boolean =
     !releaseKeystorePath.isNullOrBlank() && File(releaseKeystorePath).exists()
@@ -24,8 +33,8 @@ android {
         applicationId = "com.floatscript.app"
         minSdk = 26
         targetSdk = 35
-        versionCode = 3
-        versionName = "1.1.1"
+        versionCode = resolvedVersionCode
+        versionName = resolvedVersionName
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
@@ -44,7 +53,9 @@ android {
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // R8 shrinking + resource shrinking for the shipped build.
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -72,6 +83,15 @@ android {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
+    }
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
+    lint {
+        abortOnError = true
+        warningsAsErrors = false
+        // Every user-visible string is translated except the brand name.
+        disable += setOf("MissingTranslation", "ExtraTranslation")
     }
 }
 
@@ -114,6 +134,10 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
 
     testImplementation("junit:junit:4.13.2")
+    testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:1.8.1")
+    // The real org.json, so JSON tests run on the JVM instead of the stubbed android.jar
+    testImplementation("org.json:json:20240303")
+
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation(platform(libs.androidx.compose.bom))

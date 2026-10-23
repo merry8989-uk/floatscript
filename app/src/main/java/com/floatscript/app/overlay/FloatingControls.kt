@@ -28,6 +28,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.floatscript.app.R
@@ -65,11 +66,14 @@ fun FloatingControls(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Live read-out so the user can see the effect of the +/- buttons.
+        val readOut = "${speed.toInt()} px/s \u00B7 ${fontSizeSp.toInt()} sp \u00B7 ${scrollMode.shortLabel()}"
         Text(
-            text = "${speed.toInt()} px/s \u00B7 ${fontSizeSp.toInt()} sp \u00B7 ${scrollMode.shortLabel()}",
+            text = readOut,
             color = Color(0xFFB9C2CC),
             fontSize = 10.sp,
-            modifier = Modifier.padding(top = 2.dp)
+            modifier = Modifier
+                .padding(top = 2.dp)
+                .semantics { contentDescription = readOut }
         )
 
         Row(
@@ -82,8 +86,8 @@ fun FloatingControls(
                 contentDescription = stringResource(R.string.cd_drag_handle),
                 tint = Color(0xFFB9C2CC),
                 modifier = Modifier
-                    .size(38.dp)
-                    .padding(8.dp)
+                    .size(44.dp)
+                    .padding(9.dp)
                     .pointerInput(Unit) {
                         detectDragGestures { change, dragAmount ->
                             change.consume()
@@ -95,6 +99,7 @@ fun FloatingControls(
             ControlButton(
                 icon = if (isPlaying) AppIcons.Pause else Icons.Filled.PlayArrow,
                 desc = stringResource(if (isPlaying) R.string.cd_pause else R.string.cd_play),
+                state = stringResource(if (isPlaying) R.string.state_playing else R.string.state_paused),
                 onClick = onTogglePlay
             )
             ControlButton(AppIcons.Stop, stringResource(R.string.cd_stop), onStop)
@@ -114,10 +119,21 @@ fun FloatingControls(
 private fun ControlButton(
     icon: ImageVector,
     desc: String,
+    state: String? = null,
     onClick: () -> Unit
 ) {
-    IconButton(onClick = onClick, modifier = Modifier.size(38.dp)) {
-        Icon(imageVector = icon, contentDescription = desc, tint = Color.White)
+    // 44dp keeps the strip compact while staying close to the 48dp a11y target;
+    // Material's IconButton already expands the touch area.
+    IconButton(
+        onClick = onClick,
+        modifier = Modifier
+            .size(44.dp)
+            .semantics {
+                contentDescription = desc
+                if (state != null) stateDescription = state
+            }
+    ) {
+        Icon(imageVector = icon, contentDescription = null, tint = Color.White)
     }
 }
 
@@ -129,7 +145,7 @@ private fun ModeButton(scrollMode: ScrollMode, onClick: () -> Unit) {
     IconButton(
         onClick = onClick,
         modifier = Modifier
-            .size(38.dp)
+            .size(44.dp)
             .semantics { contentDescription = desc }
     ) {
         Text(text = label, color = Color.White, fontSize = 11.sp)

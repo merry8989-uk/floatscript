@@ -104,6 +104,10 @@ fun RecordScreen(onBack: () -> Unit) {
     // Bind the camera to the lifecycle; re-binds when the lens changes.
     LaunchedEffect(lensFacing, hasCamera) {
         if (!hasCamera) return@LaunchedEffect
+        // Explicit check so the requirement is obvious to readers (and lint).
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) !=
+            PackageManager.PERMISSION_GRANTED
+        ) return@LaunchedEffect
         val providerFuture = ProcessCameraProvider.getInstance(context)
         providerFuture.addListener({
             val provider = providerFuture.get()
@@ -198,7 +202,10 @@ fun RecordScreen(onBack: () -> Unit) {
                             ).setContentValues(values).build()
 
                             var pending = videoCapture.output.prepareRecording(context, output)
-                            if (hasAudio) pending = pending.withAudioEnabled()
+                            val micGranted = ContextCompat.checkSelfPermission(
+                                context, Manifest.permission.RECORD_AUDIO
+                            ) == PackageManager.PERMISSION_GRANTED
+                            if (hasAudio && micGranted) pending = pending.withAudioEnabled()
 
                             runCatching {
                                 pending.start(ContextCompat.getMainExecutor(context)) { event ->
@@ -278,7 +285,13 @@ fun RecordScreen(onBack: () -> Unit) {
                             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                 notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                             }
-                            OverlayService.start(context)
+                            if (!OverlayService.start(context)) {
+                                Toast.makeText(
+                                    context,
+                                    context.getString(R.string.overlay_start_failed),
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
                         }
                     },
                     modifier = Modifier.weight(1f)

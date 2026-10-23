@@ -49,6 +49,9 @@ Run -> Build APK(s). Android Studio provisions the Gradle wrapper and SDK.
 ./gradlew :app:assembleDebug
 ```
 
+The release workflow also produces the **Play-ready `.aab`** and attaches it to
+the GitHub release next to the APK.
+
 In every case the debug APK lands at:
 
 ```
@@ -91,12 +94,27 @@ app/src/main/java/com/floatscript/app/
 ├── speech/SpeechFollower.kt       # Optional speech-following (SpeechRecognizer)
 ├── ui/
 │   ├── home/HomeScreen.kt         # Script list, import, paste, start overlay
+│   │                              # (two-pane on tablets / foldables)
 │   ├── editor/ScriptEditorScreen.kt
 │   ├── settings/SettingsScreen.kt
 │   ├── record/RecordScreen.kt     # CameraX preview + in-app recording
+│   ├── icons/AppIcons.kt          # The few icons not in material-icons-core
 │   └── theme/                     # Material 3 theme
 └── viewmodel/                     # MVVM ViewModels + factory
+
+app/src/test/                      # JVM unit tests (state, tokenizer, backup codec)
+store-assets/                      # Play Store icon, feature graphic, listing notes
+PRIVACY.md                         # Privacy policy
 ```
+
+## Testing
+
+```bash
+./gradlew :app:testDebugUnitTest   # unit tests
+./gradlew :app:lintDebug           # Android lint
+```
+
+Both run automatically in CI on every pull request, and before every release.
 
 ## Feature map
 
@@ -181,7 +199,12 @@ external-teleprompter even if camera/mic permissions are denied.
   is not a beat-perfect karaoke timing.
 - **Speech-following** depends on the device's on-device speech recogniser and
   network availability for some languages.
-- The sample script and UI strings are in English.
+- UI strings are English by default with a **Hindi (`values-hi`) translation**;
+  other languages fall back to English.
+- Release builds have **R8 + resource shrinking enabled**. It is configured with
+  keep rules for Room / DataStore / CameraX / the app entry points, but a
+  minified build has not been smoke-tested on a device yet — do that before
+  shipping.
 - The floating window re-clamps itself on rotation, but the saved position is in
   raw pixels, so a rotation can still move the window.
 - Icons use only the small `material-icons-core` set plus a few hand-drawn
@@ -189,6 +212,15 @@ external-teleprompter even if camera/mic permissions are denied.
   `material-icons-extended` dependency (which slows dexing a lot for a handful
   of glyphs). A couple of control-strip icons are therefore simplified
   (e.g. text size uses chevrons, hide-controls uses a cross).
+
+## Store assets
+
+`store-assets/` holds the Play Store icon, the feature graphic and
+`STORE-LISTING.md` (description text, data-safety answers, content rating and a
+release checklist). Screenshots still need to be captured on a real device.
+
+See `PRIVACY.md` for the privacy policy — the app collects nothing, but it does
+use the camera and microphone, which must be declared on Play.
 
 ## License
 

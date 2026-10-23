@@ -1,13 +1,14 @@
 name: Build debug APK
 
+# Runs on pull requests (and on demand). Pushes to main are handled by the
+# release workflow, so this no longer duplicates every main build.
 on:
-  push:
-    branches: [ main, master ]
   pull_request:
   workflow_dispatch:
 
 jobs:
-  build:
+  check:
+    name: Unit tests + lint
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,17 +20,54 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      # The ubuntu-latest runner already ships the Android SDK. We only make
-      # sure the licences are accepted and the components we target exist.
-      # (Deliberately NOT using android-actions/setup-android, whose
-      # `sdkmanager tools` step fails on current runner images.)
+      # The ubuntu-latest runner already ships the Android SDK; we only accept
+      # licences and make sure the components we target exist.
       - name: Prepare Android SDK
         run: |
           set -e
           SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
           SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | head -1)"
-          echo "ANDROID_HOME=$SDK"
-          echo "sdkmanager=$SDKMANAGER"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" --install "platform-tools" "platforms;android-35" "build-tools;35.0.0" >/dev/null 2>&1 || true
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x ./gradlew
+
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Lint
+        run: ./gradlew :app:lintDebug --no-daemon --stacktrace
+
+      - name: Upload reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-and-lint-reports
+          path: |
+            app/build/reports/tests/**
+            app/build/reports/lint-results-*.html
+          if-no-files-found: ignore
+
+  build:
+    name: Debug APK
+    needs: check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Prepare Android SDK
+        run: |
+          set -e
+          SDK="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          SDKMANAGER="$(find "$SDK/cmdline-tools" -type f -name sdkmanager 2>/dev/null | head -1)"
           yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
           "$SDKMANAGER" --install "platform-tools" "platforms;android-35" "build-tools;35.0.0" >/dev/null 2>&1 || true
 

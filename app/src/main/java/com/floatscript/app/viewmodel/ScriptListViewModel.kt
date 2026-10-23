@@ -20,11 +20,15 @@ class ScriptListViewModel(
     val scriptList: StateFlow<List<Script>> = scripts.scripts
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
-    /** Makes [script] the active script and launches (or updates) the overlay. */
-    fun startOverlay(context: Context, script: Script) {
+    /**
+     * Makes [script] the active script and launches (or updates) the overlay.
+     * Returns false when the system refused to start the foreground service.
+     */
+    fun startOverlay(context: Context, script: Script): Boolean {
         viewModelScope.launch { settings.setLastScriptId(script.id) }
-        if (OverlayService.isRunning) {
+        return if (OverlayService.isRunning) {
             OverlayService.updateScript(context, script.id)
+            true
         } else {
             OverlayService.start(context)
         }

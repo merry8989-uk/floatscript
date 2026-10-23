@@ -66,6 +66,8 @@
 
     <string name="cd_stop">Stop</string>
     <string name="cd_scroll_mode">Scroll mode</string>
+    <string name="state_playing">Playing</string>
+    <string name="state_paused">Paused</string>
     <string name="cd_drag_strip">Drag to move the teleprompter</string>
     <string name="cd_resize">Drag to resize the teleprompter</string>
 
@@ -77,6 +79,8 @@
     <string name="restore_done">%1$d script(s) restored</string>
     <string name="restore_failed">Could not read that backup file</string>
     <string name="home_more">More</string>
+    <string name="select_script_to_edit">Select a script to edit</string>
+    <string name="overlay_start_failed">Could not start the teleprompter. Please try again from the app.</string>
 
     <!-- Speech-follow permission -->
     <string name="speech_permission_needed">Microphone permission is required for speech-following</string>

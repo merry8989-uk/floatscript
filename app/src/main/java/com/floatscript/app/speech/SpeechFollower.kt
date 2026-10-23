@@ -1,11 +1,14 @@
 package com.floatscript.app.speech
 
+import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognitionListener
 import android.speech.RecognizerIntent
 import android.speech.SpeechRecognizer
+import androidx.core.content.ContextCompat
 import java.util.Locale
 
 /**
@@ -88,6 +91,12 @@ class SpeechFollower(
 
     fun start() {
         if (listening) return
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) !=
+            PackageManager.PERMISSION_GRANTED
+        ) {
+            onError(SpeechRecognizer.ERROR_INSUFFICIENT_PERMISSIONS)
+            return
+        }
         if (!isAvailable) {
             onError(SpeechRecognizer.ERROR_CLIENT)
             return

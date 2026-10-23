@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -46,6 +47,7 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -54,6 +56,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.stringResource
@@ -66,6 +69,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.floatscript.app.R
 import com.floatscript.app.model.Script
 import com.floatscript.app.overlay.OverlayService
+import com.floatscript.app.ui.editor.ScriptEditorContent
 import com.floatscript.app.ui.icons.AppIcons
 import com.floatscript.app.viewmodel.AppViewModelProvider
 import com.floatscript.app.viewmodel.ScriptListViewModel
@@ -80,6 +84,13 @@ fun HomeScreen(
 ) {
     val context = LocalContext.current
     val scripts by viewModel.scriptList.collectAsStateWithLifecycle()
+
+    // Tablet / foldable: list on the left, editor on the right.
+    val wide = LocalConfiguration.current.screenWidthDp >= 720
+    var selectedId by remember { mutableStateOf<Long?>(null) }
+    fun openEditor(id: Long) {
+        if (wide) selectedId = id else onEditScript(id)
+    }
 
     // The service's running flag is process-global, so refresh it whenever we
     // come back to the foreground.
@@ -111,7 +122,7 @@ fun HomeScreen(
         uri?.let {
             val text = readTextFromUri(context, it) ?: return@let
             val name = it.lastPathSegment?.substringAfterLast('/')?.removeSuffix(".txt") ?: "Imported script"
-            viewModel.createScript(name, text) { id -> onEditScript(id) }
+            viewModel.createScript(name, text) { id -> openEditor(id) }
         }
     }
 
@@ -157,8 +168,12 @@ fun HomeScreen(
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
-        viewModel.startOverlay(context, script)
-        overlayRunning = true
+        val started = viewModel.startOverlay(context, script)
+        if (started) {
+            overlayRunning = true
+        } else {
+            Toast.makeText(context, context.getString(R.string.overlay_start_failed), Toast.LENGTH_LONG).show()
+        }
     }
 
     Scaffold(
@@ -197,11 +212,16 @@ fun HomeScreen(
             )
         }
     ) { padding ->
-        Column(
+        Row(
             Modifier
                 .fillMaxSize()
                 .padding(padding)
         ) {
+            Column(
+                Modifier
+                    .fillMaxHeight()
+                    .weight(if (wide) 0.45f else 1f)
+            ) {
             if (!overlayPermissionGranted) {
                 OverlayPermissionCard(
                     onGrant = {
@@ -217,7 +237,7 @@ fun HomeScreen(
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 OutlinedButton(
-                    onClick = { onEditScript(0L) },
+                    onClick = { openEditor(0L) },
                     modifier = Modifier.weight(1f)
                 ) {
                     Icon(Icons.Filled.Add, contentDescription = null)
@@ -236,7 +256,7 @@ fun HomeScreen(
                 onClick = {
                     val pasted = readClipboard(context)
                     if (!pasted.isNullOrBlank()) {
-                        viewModel.createScript("Pasted script", pasted) { id -> onEditScript(id) }
+                        viewModel.createScript("Pasted script", pasted) { id -> openEditor(id) }
                     }
                 },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp)
@@ -263,11 +283,37 @@ fun HomeScreen(
                             script = script,
                             isActive = overlayRunning,
                             onUse = { startOverlay(script) },
-                            onEdit = { onEditScript(script.id) },
+                            onEdit = { openEditor(script.id) },
                             onRename = { showRename = script },
                             onDuplicate = { viewModel.duplicate(script) },
                             onDelete = { viewModel.delete(script) }
                         )
+                    }
+                }
+            }
+        }
+
+            if (wide) {
+                VerticalDivider()
+                Box(
+                    Modifier
+                        .fillMaxHeight()
+                        .weight(0.55f)
+                ) {
+                    val id = selectedId
+                    if (id != null) {
+                        ScriptEditorContent(
+                            scriptId = id,
+                            onSaved = { saved -> selectedId = saved }
+                        )
+                    } else {
+                        Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                            Text(
+                                stringResource(R.string.select_script_to_edit),
+                                style = MaterialTheme.typography.bodyLarge,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
                     }
                 }
             }

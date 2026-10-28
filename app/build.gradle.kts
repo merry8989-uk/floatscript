@@ -11,8 +11,8 @@ plugins {
 // CI overrides both values: the release workflow passes -PversionName=<tag>
 // and -PversionCode=<run number>, so releases bump themselves. Local builds
 // fall back to the defaults below.
-val defaultVersionCode = 6
-val defaultVersionName = "1.3.0"
+val defaultVersionCode = 7
+val defaultVersionName = "1.3.1"
 val resolvedVersionCode = (findProperty("versionCode") as String?)?.toIntOrNull() ?: defaultVersionCode
 val resolvedVersionName = (findProperty("versionName") as String?)?.takeIf { it.isNotBlank() } ?: defaultVersionName
 

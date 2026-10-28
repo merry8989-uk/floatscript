@@ -21,5 +21,9 @@ object AppViewModelProvider {
             val app = this[APPLICATION_KEY] as FloatScriptApp
             SettingsViewModel(app.settingsRepository)
         }
+        initializer {
+            val app = this[APPLICATION_KEY] as FloatScriptApp
+            UpdateViewModel(app.settingsRepository)
+        }
     }
 }

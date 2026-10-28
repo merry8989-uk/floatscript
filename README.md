@@ -107,6 +107,21 @@ store-assets/                      # Play Store icon, feature graphic, listing n
 PRIVACY.md                         # Privacy policy
 ```
 
+## Updates
+
+The app can check the public GitHub Releases API for a newer version and, if one
+exists, show the release notes and download the APK with a progress bar before
+handing it to the system installer.
+
+- The check runs at most **once every 24 hours** on start, and on demand from
+  **Settings -> Updates**.
+- **Copies installed from Google Play never self-update** — Play policy requires
+  Play to handle those updates, so the screen points at the Play listing instead
+  (detected via the installer package name).
+- Only a plain HTTPS GET is made; nothing is collected. See `PRIVACY.md`.
+- The "Explore more apps by us" entry at the bottom of Settings points at
+  `AppLinks.MORE_APPS_URL` — change that one constant to your developer page.
+
 ## Diagnostics
 
 FloatScript keeps a **local-only** diagnostics log: a bounded in-memory buffer

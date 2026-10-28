@@ -112,4 +112,33 @@
     <string name="diagnostics_share_crash">क्रैश रिपोर्ट शेयर करें</string>
     <string name="diagnostics_saved">रिपोर्ट सहेजी गई</string>
     <string name="diagnostics_save_failed">रिपोर्ट सहेजी नहीं जा सकी</string>
+    <!-- Updates -->
+    <string name="update_title">ऐप अपडेट</string>
+    <string name="update_current_version">आप संस्करण %1$s पर हैं</string>
+    <string name="update_check">अपडेट जाँचें</string>
+    <string name="update_checking">अपडेट जाँचा जा रहा है…</string>
+    <string name="update_uptodate">आप नवीनतम संस्करण पर हैं।</string>
+    <string name="update_check_again">दोबारा जाँचें</string>
+    <string name="update_available">संस्करण %1$s उपलब्ध है</string>
+    <string name="update_size">डाउनलोड आकार: %1$s</string>
+    <string name="update_download">अपडेट डाउनलोड करें</string>
+    <string name="update_downloading">संस्करण %1$s डाउनलोड हो रहा है</string>
+    <string name="update_progress">%1$d%%  ·  %3$s में से %2$s</string>
+    <string name="update_progress_unknown">%1$s डाउनलोड हुआ</string>
+    <string name="update_cancel">रद्द करें</string>
+    <string name="update_downloaded">संस्करण %1$s डाउनलोड हो गया</string>
+    <string name="update_install_hint">इंस्टॉल की पुष्टि के लिए Android आपसे पूछेगा।</string>
+    <string name="update_install">इंस्टॉल करें</string>
+    <string name="update_install_failed">इंस्टॉलर नहीं खुल सका</string>
+    <string name="update_error">अपडेट जाँच विफल: %1$s</string>
+    <string name="update_managed_by_play">यह कॉपी Google Play से इंस्टॉल हुई है, इसलिए अपडेट Play द्वारा किए जाते हैं।</string>
+    <string name="update_open_play">Play Store खोलें</string>
+    <string name="update_available_short">अपडेट उपलब्ध: v%1$s</string>
+    <string name="update_view">देखें</string>
+    <string name="update_section">अपडेट</string>
+
+    <!-- More apps -->
+    <string name="more_apps_title">हमारे और ऐप्स देखें</string>
+    <string name="more_apps_subtitle">उसी डेवलपर के अन्य ऐप्स देखें</string>
+    <string name="link_open_failed">लिंक नहीं खुल सका</string>
 </resources>

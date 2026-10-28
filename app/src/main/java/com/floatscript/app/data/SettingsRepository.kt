@@ -46,6 +46,7 @@ class SettingsRepository(private val context: Context) {
         val SPEECH_FOLLOW = booleanPreferencesKey("speech_follow")
         val MINIMAL = booleanPreferencesKey("minimal")
         val LAST_SCRIPT_ID = longPreferencesKey("last_script_id")
+        val LAST_UPDATE_CHECK = longPreferencesKey("last_update_check")
         val GEO_XF = floatPreferencesKey("geo_x_fraction")
         val GEO_YF = floatPreferencesKey("geo_y_fraction")
         val GEO_WF = floatPreferencesKey("geo_w_fraction")
@@ -89,6 +90,9 @@ class SettingsRepository(private val context: Context) {
 
     val lastScriptId: Flow<Long> = prefs.map { it[Keys.LAST_SCRIPT_ID] ?: 0L }
 
+    /** Timestamp (ms) of the last automatic update check. */
+    val lastUpdateCheck: Flow<Long> = prefs.map { it[Keys.LAST_UPDATE_CHECK] ?: 0L }
+
     suspend fun saveSettings(s: ScriptSettings) {
         context.dataStore.edit { p ->
             p[Keys.TEXT_COLOR] = s.textColor.toArgb()
@@ -122,5 +126,9 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setLastScriptId(id: Long) {
         context.dataStore.edit { it[Keys.LAST_SCRIPT_ID] = id }
+    }
+
+    suspend fun setLastUpdateCheck(timestampMs: Long) {
+        context.dataStore.edit { it[Keys.LAST_UPDATE_CHECK] = timestampMs }
     }
 }

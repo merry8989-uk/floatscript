@@ -50,6 +50,7 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -74,6 +75,8 @@ import com.floatscript.app.ui.editor.ScriptEditorContent
 import com.floatscript.app.ui.icons.AppIcons
 import com.floatscript.app.viewmodel.AppViewModelProvider
 import com.floatscript.app.viewmodel.ScriptListViewModel
+import com.floatscript.app.viewmodel.UpdateUiState
+import com.floatscript.app.viewmodel.UpdateViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,10 +85,16 @@ fun HomeScreen(
     onOpenSettings: () -> Unit,
     onOpenRecording: () -> Unit,
     onOpenDiagnostics: () -> Unit,
-    viewModel: ScriptListViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    onOpenUpdate: () -> Unit,
+    viewModel: ScriptListViewModel = viewModel(factory = AppViewModelProvider.Factory),
+    updateViewModel: UpdateViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val context = LocalContext.current
     val scripts by viewModel.scriptList.collectAsStateWithLifecycle()
+
+    // Automatic (throttled) update check on start.
+    val updateState by updateViewModel.state.collectAsStateWithLifecycle()
+    LaunchedEffect(Unit) { updateViewModel.autoCheckIfDue() }
 
     // Tablet / foldable: list on the left, editor on the right.
     val wide = LocalConfiguration.current.screenWidthDp >= 720
@@ -232,6 +241,24 @@ fun HomeScreen(
                     .fillMaxHeight()
                     .weight(if (wide) 0.45f else 1f)
             ) {
+            (updateState as? UpdateUiState.Available)?.let { available ->
+                Card(Modifier.fillMaxWidth().padding(12.dp)) {
+                    Row(
+                        Modifier.fillMaxWidth().padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            stringResource(R.string.update_available_short, available.info.version),
+                            style = MaterialTheme.typography.titleSmall,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Button(onClick = onOpenUpdate) {
+                            Text(stringResource(R.string.update_view))
+                        }
+                    }
+                }
+            }
+
             if (!overlayPermissionGranted) {
                 OverlayPermissionCard(
                     onGrant = {

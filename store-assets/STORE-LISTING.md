@@ -82,6 +82,13 @@ the device** (no INTERNET permission, no crash-reporting SDK), so it still count
 as not collecting data. If you ever add a remote reporter, this answer must
 change.
 
+Update check: the app may call the public GitHub Releases API to look for a newer
+version. That is a plain GET with no identifiers and collects no user data, so the
+Data safety answer stays "no data collected" — but declare the INTERNET
+permission and mention it in the listing. **The self-updater is disabled for
+Play-installed copies** (it detects the Play installer), so this does not breach
+Play's policy on self-updating.
+
 Note: the app uses the camera and microphone **on-device only**. Android's data
 safety form treats on-device-only processing as not "collected", but you must
 declare the camera/microphone *permissions* and explain them in the listing.

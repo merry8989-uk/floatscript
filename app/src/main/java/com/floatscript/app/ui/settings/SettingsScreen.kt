@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Card
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
@@ -47,6 +49,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.floatscript.app.BuildConfig
 import com.floatscript.app.R
 import com.floatscript.app.model.ScrollMode
 import com.floatscript.app.model.ScriptSettings
@@ -68,6 +71,8 @@ private val BG_COLORS = listOf(
 fun SettingsScreen(
     onBack: () -> Unit,
     onOpenDiagnostics: () -> Unit,
+    onOpenUpdate: () -> Unit,
+    onOpenMoreApps: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = AppViewModelProvider.Factory)
 ) {
     val s by viewModel.settings.collectAsStateWithLifecycle()
@@ -219,9 +224,47 @@ fun SettingsScreen(
                 Text(stringResource(R.string.diagnostics_open))
             }
 
-            Spacer(Modifier.height(24.dp))
+            // ---- Updates ----
+            SectionTitle(stringResource(R.string.update_section))
+            Card(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenUpdate)
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        stringResource(R.string.update_check),
+                        style = MaterialTheme.typography.bodyLarge
+                    )
+                    Text(
+                        stringResource(R.string.update_current_version, BuildConfig.VERSION_NAME),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
 
-            ExploreMoreAppsSection()
+            // ---- Explore more apps (kept at the very bottom) ----
+            Spacer(Modifier.height(8.dp))
+            Card(
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onOpenMoreApps)
+            ) {
+                Column(Modifier.padding(16.dp)) {
+                    Text(
+                        stringResource(R.string.more_apps_title),
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Text(
+                        stringResource(R.string.more_apps_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+
+            Spacer(Modifier.height(24.dp))
         }
     }
 }

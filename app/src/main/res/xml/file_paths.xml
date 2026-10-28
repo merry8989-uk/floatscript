@@ -2,4 +2,6 @@
 <paths>
     <!-- Diagnostics reports the user chooses to share/export. -->
     <files-path name="diagnostics" path="diagnostics/" />
+    <!-- Downloaded update APKs handed to the system installer. -->
+    <cache-path name="updates" path="updates/" />
 </paths>

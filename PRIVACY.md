@@ -29,6 +29,10 @@ None of this leaves your device unless **you** explicitly export it (see
   speech-following mode.
 - **Notifications** — shows the ongoing "FloatScript is running" notification
   required for a foreground service.
+- **Internet** — used only for the optional update check and for downloading a
+  newer APK from GitHub. No analytics or tracking traffic.
+- **Install unknown apps** — lets the downloaded update APK be handed to the
+  system installer (not used by Play-installed copies).
 
 You can deny camera, microphone or notification permission and still use the app
 as an external teleprompter.
@@ -58,10 +62,25 @@ The app keeps a small rolling diagnostics log and, if it crashes, writes a crash
 report containing the stack trace, the app version, your Android version and
 device model, and the last few log lines.
 
-**All of this stays on your device.** The app does not request the INTERNET
-permission and has no code that uploads anything. You can review, share, export
-or delete these logs yourself from **Settings -> Diagnostics**; they are only
-ever sent anywhere if *you* choose to share them.
+**All of this stays on your device.** No diagnostics data is ever uploaded. You
+can review, share, export or delete these logs yourself from
+**Settings -> Diagnostics**; they are only ever sent anywhere if *you* choose to
+share them.
+
+## Update check
+
+FloatScript can check whether a newer version exists by calling the public GitHub
+Releases API for this project
+(`https://api.github.com/repos/merry8989-uk/floatscript/releases/latest`).
+
+That request carries **no personal data and no identifiers** — it is an ordinary
+HTTPS request, which necessarily reveals your IP address to GitHub in the same
+way visiting any web page does. The app stores nothing about the result beyond a
+timestamp of the last check, and nothing is sent to the developer.
+
+If a newer version exists you may download the APK from GitHub and install it.
+**Copies installed from Google Play never use this path** — Play handles those
+updates and the in-app updater is disabled.
 
 ## Analytics, ads and tracking
 
